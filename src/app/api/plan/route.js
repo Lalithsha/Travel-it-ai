@@ -9,13 +9,14 @@ const openai = new OpenAI({
 });
 
 const contentMap = {
-    "trip": "Act as an expert travel agent. I will give you a location and number of days, give me a complete trip for those days in the form of a table. Give me day wise breakdown and include bars, clubs, hikes, and other attractions that I can visit. Give this in a markdown format.",
+    "trip": "Act as an expert travel agent. I will give you a location and number of days and number of peoples, trip date , give me a complete trip for those days in the form of a table. Give me day wise breakdown and include bars, clubs, hikes, and other attractions that I can visit. Give this in a markdown format.",
     "restaurants": "Act as an expert travel agent. I will give you a state, city and days. Give me the list of restaurants, bars, and dance clubs that I can visit during those days in that city. Divide the 3 with proper headings and return in markdown format."
 };
 
 const instructionMessage = {
     role: "system",
     content: "Act as an expert travel agent. I will give you a location and number of days, give me a complete trip for those days in the form of a table. Give me day wise breakdown and include bars, clubs, hikes, and other attractions that I can visit. Give this in a markdown format."
+    // content: "Act as an expert travel agent. I will give you a location and number of days and number of peoples, trip date , give me a complete trip for those days in the form of a table. Give me day wise breakdown and include bars, clubs, hikes, and other attractions that I can visit. Give this in a markdown format."
 };
 
 
@@ -50,8 +51,6 @@ export async function POST(req) {
         const response = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [instructionMessage, ...messages]
-
-            // message: messages,
         });
         //  return new NextResponse(JSON.stringify(response.choices[0].message))
         console.log(response.choices[0].message, "from router.js");

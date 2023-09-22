@@ -5,29 +5,42 @@ import { Input } from "@/components/ui/input";
 
 import '@/styles/custom.css';
 import { useState } from "react";
-// import OpenAI from "openai";
 import axios from "axios";
+import ReactDom from 'react-dom'
 import { useRouter } from "next/navigation";
+// import ReactMarkdown from 'react-markdown'
+import styles from "./page.module.css"
+// import remarkGfm from 'remark-gfm'
 
-import { useEffect } from "react";
+
+import { marked } from 'marked';
+import PacmanLoader from "react-spinners/PacmanLoader";
+
+import { Montserrat } from "next/font/google";
+import { cn } from "@/lib/utils"
+// import Box from '@mui/material/Box';
+
+// import { useEffect } from "react";
 import { ComboboxDemo } from "@/components/combobox";
 import { Button } from "@/components/ui/button";
+import Navbar from "@/components/navbar";
+// import { Layout } from "lucide-react";
 // import { Calendar } from "@/components/ui/calendar";
+
+
+const font = Montserrat({
+    weight: "800",
+    subsets: ["latin"]
+})
+
 
 export default function Home() {
 
     let [loading, setLoading] = useState(false);
-    let [color, setColor] = useState("#ffffff");
+    // let [color, setColor] = useState("#ffffff");
 
     const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        city: "",
-        date: "",
-        days: "",
-        content: "",
-        restaurants: ""
-    });
     const [value, setValue] = useState("")
     const [people, setPeople] = useState("");
     const [days, setDays] = useState("");
@@ -39,7 +52,9 @@ export default function Home() {
     const handlePlanTrip = async () => {
 
         try {
-            // Prepare the user message with the trip details
+
+            setMessages([]);
+            setLoading(true);
 
             // Create the content for instructionMessage including the extracted values
             const content = `${value} city from ${date} for ${days} days with ${people} people`;
@@ -51,19 +66,18 @@ export default function Home() {
 
             const newMessages = [userMessage];
 
-            console.log(JSON.stringify(content), " stringify content")
-            console.log(newMessages, "from content")
+            // console.log(JSON.stringify(content), " stringify content")
+            // console.log(newMessages, "from content")
 
             const response = await axios.post("/api/plan", {
                 messages: newMessages,
             })
 
-            console.log(response, "from response")
+            // console.log(response, "from response")
 
-            // setMessages((current) => [...current, userMessage, response.data]); // here may be another issue 
             // setMessages((current) => [...current, userMessage, response.data.choices[0].message]);
             setMessages((current) => [...current, userMessage, { role: 'assistant', content: response.data }]);
-            console.log("final", userMessage, "user message", response.data, "response.data")
+            // console.log("final", userMessage, "user message", response.data, "response.data")
 
 
             // Clear the input fields if needed
@@ -78,186 +92,30 @@ export default function Home() {
         } finally {
             // Refresh the router or perform other actions as needed
             router.refresh();
+            setLoading(false);
         }
 
 
     };
 
-    console.log(...messages, "from messages")
+    // console.log(...messages, "from messages")
 
-
-    const [tableData, setTableData] = useState({ description: '', parsedData: [] });
-
-    useEffect(() => {
-        // Parse the API string response into a structured format.
-        const parsedData = parseApiResponse(messages);
-        // Set parsed data in state.
-        setTableData(parsedData);
-    }, [messages]);
-
-
-    // chat gpt -4 latest response
-    // function parseApiResponse(messages) {
-    //     const lines = messages && messages.length > 0
-    //         && messages[0].content && messages[0].content.split('\n');
-    //     let parsedData = [];
-    //     let day = {};
-    //     let descriptionLine = "";
-
-    //     // Iterate over each line in the response.
-    //     for (let i = 0; i < lines.length; i++) {
-    //         let line = lines[i];
-
-    //         // If line starts with '##' it's a Trip itinerary title.
-    //         if (line.startsWith('##')) {
-    //             descriptionLine = line;
-    //         }
-    //         // If line starts with '### Day' it's a day title. Start a new day object.
-    //         else if (line.startsWith('### Day')) {
-    //             if (day.title) {
-    //                 // Save the previous day to parsedData array.
-    //                 parsedData.push(day);
-    //             }
-    //             // Reset day object.
-    //             day = {
-    //                 title: line,
-    //                 activities: []
-    //             };
-    //             // If line starts with '|' it's a table row. Add it to current day activities.
-    //         } else if (line.startsWith('|')) {
-    //             let row = line.split('|').slice(1, -1); // Remove empty elements from split.
-
-    //             // Only add rows with valid activity.
-    //             if (row.length === 3) {
-    //                 day.activities.push({
-    //                     time: row[0].trim(),
-    //                     activity: row[1].trim(),
-    //                     description: row[2].trim()
-    //                 });
-    //             }
-    //         }
-    //     }
-
-    //     // Add the final day to parsedData array.
-    //     if (day.title) {
-    //         parsedData.push(day);
-    //     }
-
-    //     return { description: descriptionLine, parsedData };
-    // }
-
-    function parseApiResponse(messages) {
-        let parsedData = [];
-        let day = {};
-        let descriptionLine = "";
-
-        // Iterate over each message in the response.
-        messages.forEach(message => {
-            const lines = message.content.content && message.content.content.split('\n');
-            // const lines = message.content && message.content.split('\n');
-
-
-            // Check if lines is defined before iterating over it.
-            if (lines) {
-                // Iterate over each line in the message.
-                for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i];
-
-                    // If line starts with '##' it's a Trip itinerary title.
-                    if (line.startsWith('##')) {
-                        descriptionLine = line;
-                    }
-                    // If line starts with '### Day' it's a day title. Start a new day object.
-                    else if (line.startsWith('### Day')) {
-                        if (day.title && day.activities.length > 0) {
-                            // Save the previous day to parsedData array.
-                            parsedData.push(day);
-                        }
-                        // Reset day object.
-                        day = {
-                            title: line,
-                            activities: []
-                        };
-                        // If line starts with '|' it's a table row. Add it to current day activities.
-                    } else if (line.startsWith('|')) {
-                        let row = line.split('|').slice(1, -1); // Remove empty elements from split.
-
-                        // Only add rows with valid activity.
-                        if (row.length === 3 && day.activities) {
-                            day.activities.push({
-                                time: row[0].trim(),
-                                activity: row[1].trim(),
-                                description: row[2].trim()
-                            });
-                        }
-                    }
-                }
-            }
-        });
-
-        // Add the final day to parsedData array.
-        if (day.title) {
-            parsedData.push(day);
-        }
-        return { description: descriptionLine, parsedData: parsedData.length > 0 ? parsedData : []};
-    }
-    // ## Day 5: Departure
-
-
-    // chat gpt 3.5
-    // function parseApiResponse(messages) {
-    //     const parsedData = [];
-    //     let currentDay = null;
-
-    //     for (const message of messages) {
-    //         const role = message.role;
-    //         const content = message.content || (message.role === 'assistant' && message.choices[0]?.message?.content);
-
-    //         if (content) {
-    //             if (content.startsWith('## Day')) {
-    //                 if (currentDay) {
-    //                     parsedData.push(currentDay);
-    //                 }
-    //                 currentDay = { title: content, activities: [] };
-    //             } else if (content.startsWith('|')) {
-    //                 const [time, activity] = content.split('|').slice(1, -1).map(item => item.trim());
-    //                 if (time !== 'Time' && activity !== 'Activity') {
-    //                     currentDay.activities.push({ time, activity });
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     if (currentDay) {
-    //         parsedData.push(currentDay);
-    //     }
-
-    //     return parsedData;
-    // }
-
-
-    //   console.log(parseApiResponse(messages),"parse api response")
-
-
-    // const tableData = parseApiResponse(messages);
-
-    // console.log(tableData.description, "description from table", tableData.parsedData, "parsed data")
+    // const html = marked.parse(messages);
 
     return (
 
 
 
         <>
-            <div>
-                <header className="text-2xl md:text-4xl font-bold text-center mt-7">
-                    Welcome to Travelling-AI
-                </header>
+            <div >
+                <Navbar></Navbar>
             </div>
-            <main className="flex justify-between">
-                {/* Left Section: Input Elements and Button */}
-                <div className="w-1/2 py-10 px-5 text-center ">
 
-                    <div className="text-center mt-3 text-lg">
+            <main className="flex flex-col md:flex-row justify-between">
+                {/* Left Section: Input Elements and Button */}
+                <div className=" md:w-2/5 py-10 px-5 text-center ">
+
+                    <div className={cn("text-center mt-3 text-lg", font.className)}>
                         <h1>Plan your next adventure</h1>
                     </div>
 
@@ -304,55 +162,45 @@ export default function Home() {
                 </div>
 
                 {/* Right Section: API Response Box, To display the output in the screen  */}
-                <div className="w-1/2 bg-gray-200 p-5 pt-5 border ">
+                <div className="md:w-3/5 bg-gray-200 p-5  border rounded-xl border-solid border-cyan-950  m-5 "  >
 
-                    {/* chat gpt 4 */}
-                    <div className="w-1/2 bg-gray-200 p-5 pt-5 border ">
-                        <p>{tableData.description}</p>
+                    {loading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <PacmanLoader color="#87CEEB" margin={0} size={30} />
+                        </div>
+                    ) : (
+                        messages.map((message, i) => {
+                            if (message.role === 'assistant') {
 
-                        {tableData.parsedData.map((day, index) => (
-                            <div key={index}>
-                                <p>{day.title}</p>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Time</th>
-                                            <th>Activity</th>
-                                            <th>Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {day.activities.map((activity, i) => (
-                                            <tr key={i}>
-                                                <td>{activity.time}</td>
-                                                <td>{activity.activity}</td>
-                                                <td>{activity.description}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ))}
-                    </div>
+                                // return (
+                                //     // <div key={i}>
+                                //     // {/* {message.content && message.content.content ? message.content.content : ""} */}
+                                //     // {/* <MarkdownViewer remarkPlugins={[remarkGfm]} content={message.content && message.content.content ? message.content?.content : ""} /> */}
+                                //     <ReactMarkdown className={styles.markdown} remarkPlugins={[remarkGfm]}  >
+                                //                   {message.content && message.content.content ? message.content?.content : ""}
+                                //     </ReactMarkdown>
+                                //     // </div>
+
+                                // );
+
+                                const html = marked(message.content.content);
+                                return (
+                                    // <div  key={i} dangerouslySetInnerHTML={{ __html: html }} />
+                                    <div className=" m-7 " key={i} dangerouslySetInnerHTML={{ __html: html }} />
+                                )
+                            }
+                        })
+                    )}
+
                 </div>
-
             </main >
 
         </>
 
-
-
-
-
-
-
-
-
-
+        // remarkPlugins={[remarkGfm]}
 
     )
 }
-
 
 
 
