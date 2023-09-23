@@ -1,4 +1,4 @@
-Demo Screenshot 
+## Demo Screenshot 
 
 ![Screenshot 2023-09-24 030005](https://github.com/Lalithsha/News-App/assets/76611060/c1d4e77a-eb8b-48c3-9396-230b91679be9)
 
