@@ -162,7 +162,7 @@ export default function Home() {
                 </div>
 
                 {/* Right Section: API Response Box, To display the output in the screen  */}
-                <div className="md:w-3/5 bg-gray-200 p-5  border rounded-xl border-solid border-cyan-950  m-5 "  >
+                <div className="w-auto md:w-3/5 bg-gray-200 p-5  border rounded-xl border-solid border-cyan-950  m-5 "  >
 
                     {loading ? (
                         <div className="flex items-center justify-center h-full">
